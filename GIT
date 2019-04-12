@@ -1,0 +1,11 @@
+GIT的常用命令
+git clone -b 分支名称 //克隆指定的分支
+git status //显示分支的状态
+git diff 文件绝对路径 //查看文件变化与不同
+git add 文件绝对路径 //添加文件
+git commit -m '评论' // 提交合入请求与评论
+git push origin 分支名称 //把本地的分支提交到远端分支上
+git branch -a //查询所有远端分支
+git branch //查询本地分支
+git push origin --delete 远端分支名称 // 删除远端分支
+git branch -D  本地分支名称 //  删除本地分支
