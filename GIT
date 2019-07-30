@@ -9,3 +9,4 @@ git branch -a //查询所有远端分支
 git branch //查询本地分支
 git push origin --delete 远端分支名称 // 删除远端分支
 git branch -D  本地分支名称 //  删除本地分支
+git pull origin master //拉取master分支的代码
