@@ -1,0 +1,76 @@
+# node 安装 install_node.yaml
+ - name: create directory to store node
+    file:
+      path: /opt/programs
+      state: directory
+
+  - name: delete old versions
+    file:
+      path: "{{program_home}}/{{node_untar_directory}}"
+      state: absent
+
+  - name: unarchive node to remote hosts
+    unarchive:
+      src: "{{node_src}}"
+      dest: "{{program_home}}"
+
+  - name: delete old /usr/local/bin/node
+    file:
+      path: /usr/local/bin/node
+      state: absent
+
+  - name: delete old /usr/local/bin/npm
+    file:
+      path: /usr/local/bin/npm
+      state: absent
+
+  - name: delete old /usr/local/bin/ng
+    file:
+      path: /usr/local/bin/ng
+      state: absent
+
+  - name: add node to /usr/local/bin
+    shell: "ln -s {{program_home}}/{{node_untar_directory}}/bin/node /usr/local/bin/node"
+
+  - name: add ng to /usr/local/bin/ng
+    shell: "ln -s {{program_home}}/{{node_untar_directory}}/lib/node_modules/@angular/cli/bin/ng /usr/local/bin/ng"
+
+  - name: add npm to /usr/local/bin/npm
+    shell: "ln -s {{program_home}}/{{node_untar_directory}}/bin/npm /usr/local/bin/npm"
+
+  - name: set npm registry
+    shell: "npm config set registry http://cmc-cd-mirror.rnd.huawei.com/npm"
+
+  - name: set npm delete prefix
+    shell: "npm config delete prefix"
+    ignore_errors: true
+
+  - name: set npm delete prefix
+    shell: "npm config set prefix /opt/ng_package"
+    ignore_errors: true
+
+  - name: create /opt/ng_package
+    file:
+      path: /opt/ng_package/
+      state: directory
+
+  - name: copy node_modules.tar.gz
+    unarchive:
+      src: ../files/node_modules.tar.gz
+      dest: /opt/ng_package/
+
+# hosts
+[all:vars]
+program_home=/opt/programs
+node_src=../files/node-v10.16.0-linux-x64.tar.gz
+node_untar_directory=node-v10.16.0-linux-x64
+
+[euler]
+manasci-euler01 ansible_ssh_host=100.95.75.128 ansible_ssh_user=root
+
+# install_node.sh
+#!/usr/bin/env bash
+echo "Set up mutual trust"
+ansible-playbook -i wyq_hosts tasks/install_node.yaml -k
+rm -f tasks/install*.retry
+
