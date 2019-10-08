@@ -296,3 +296,125 @@ gitbook 12插件常用插件book.json
 安装插件启动服务
 gitbook install
 gitbook serve
+------------------
+Gitbook启动服务脚本
+#!/bin/bash
+#
+# Copyright Huawei Technologies Co., Ltd. 2010-2018. All rights reserved.
+#
+# Usage: 
+#   sh gitbook.sh start|stop|restart|status|build
+# Author: 
+#   Slug
+
+if [[ -f /etc/init.d/functions ]];then
+    . /etc/init.d/functions
+fi
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin
+export PATH=$PATH:/opt/ng_package/bin/
+
+GITBOOK_PORT=80
+SERVICE_NAME="gitbook"
+ROOT_DIR=$(cd "$(dirname $0)"/..;pwd)
+
+#========================================================================
+# Logger function definitions
+#------------------------------------------------------------------------
+logger(){
+    echo [$(date +'%Y-%m-%d %H:%M:%S')] [DEBUG] [$(basename ${BASH_SOURCE[1]}):$BASH_LINENO] $*
+}
+
+logger_error(){
+    echo [$(date +'%Y-%m-%d %H:%M:%S')] [ERROR] [$(basename ${BASH_SOURCE[1]}):$BASH_LINENO]  $*
+}
+
+
+#========================================================================
+# Action function definitions
+#------------------------------------------------------------------------
+function start() {
+    status && return 0
+
+    logger "Starting service ${SERVICE_NAME} ..."
+    cd "$ROOT_DIR"
+    logger "Starting install plugins ..."
+    gitbook install
+    if [ $? -ne 0 ]; then
+        logger_error "Gitbook install plugins failed, return 1"
+        return 1
+    fi
+
+    gitbook serve --port "${GITBOOK_PORT}" >/dev/null 2>&1 &
+    if [ $? -ne 0 ]; then
+        logger_error "Start gitbook process failed!"
+        return 1
+    else
+        logger "Starting gitbook process successfully!"
+        return 0
+    fi
+}
+
+function stop() {
+    status || return 0
+
+    logger "Stopping gitbook process ..."
+    local pid=$(ps -ef|grep gitbook|grep 'gitbook serve'|grep -v grep|awk '{print $2}')
+    if [[ -z "$pid" ]];then
+        logger "gitbook process not exist, return 0"
+        return 0
+    fi
+    
+    kill -9  "$pid"
+    if [[ $? -ne 0 ]];then
+        logger_error "Stop gitbook process failed, return 1"
+        return 1
+    else
+        logger "Stop gitbook process successfully, return 0"
+        return 0
+    fi
+}
+
+
+
+function restart() {
+    stop && start
+}
+
+function status() {
+    if [[ -z "$(ps -ef|grep gitbook|grep 'gitbook serve'|grep -v grep|awk '{print $2}')" ]];then
+        logger "Gitbook not running"
+        return 1
+    else
+        logger "Gitbook running"
+        return 0
+    fi
+}
+
+
+function build(){
+    cd "$ROOT_DIR"
+    gitbook build || return 1
+    return 0
+}
+
+case "$1" in
+    start)
+        start || exit 1
+        ;;
+    stop)
+        stop || exit 1
+        ;;
+    restart)
+        restart || exit 1
+        ;;
+    status)
+        status || exit 1
+        ;;
+    build)
+        build || exit 1
+        ;;
+    *)
+        echo "Usage: service gitbook.service {start|stop|restart|status|build}"
+        ;;
+esac
+-------------------------------------------------------------------------------------------
