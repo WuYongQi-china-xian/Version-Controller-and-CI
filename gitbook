@@ -296,6 +296,7 @@ gitbook 12插件常用插件book.json
 安装插件启动服务
 gitbook install
 gitbook serve
+参考插件资料：https://docs.gitbook.com/v2-changes/important-differences
 ------------------
 Gitbook启动服务脚本
 #!/bin/bash
