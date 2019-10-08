@@ -30,7 +30,7 @@ for /d %%i in (D:\MLStudio\tenant\studio-*) do (
     )
 )
 
-:: 文件名称的字符个数
+:: 计算文件名称的字符个数
 @echo on
 set testPath="D:\工作任务\mockManasOneclickInstall\ManasOneClickInstall\GDE_1.3.0_TrainingService_1.3.0_Stack (1).zip"
 
