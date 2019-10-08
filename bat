@@ -29,3 +29,25 @@ for /d %%i in (D:\MLStudio\tenant\studio-*) do (
         for /d %%k in (D:\MLStudio\tenant\studio-*) do @move /Y %%k D:\MachineLearning\tenant\
     )
 )
+
+:: 文件名称的字符个数
+@echo on
+set testPath="D:\工作任务\mockManasOneclickInstall\ManasOneClickInstall\GDE_1.3.0_TrainingService_1.3.0_Stack (1).zip"
+
+:: 45 char
+call :print %testPath%
+
+:print
+set file_name=%~n1
+set /A N=0
+pause
+:LOOP
+SET file_name=%file_name:~0,-1%
+SET /A N=%N%+1
+IF "%file_name%" EQU "" GOTO END
+GOTO LOOP
+:END
+:: add .zip 4 char
+SET /A N=%N%+4
+echo %N%
+pause
