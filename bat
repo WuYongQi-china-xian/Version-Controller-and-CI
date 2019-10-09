@@ -51,3 +51,19 @@ GOTO LOOP
 SET /A N=%N%+4
 echo %N%
 pause
+
+:: 下载文件夹
+D:\programs\wget -r -np -nd --no-check-certificate --no-proxy -P D:\Config\ManasOneforClick\package\ -t 2 文件夹网址
+
+:: 截取网址除了zip包名的前半段
+@echo on
+set testPath="D:\工作任务\mockManasOneclickInstall\ManasOneClickInstall\GDE_1.3.0_TrainingService_1.3.0_Stack (1).zip"
+call :print %testPath%
+
+:print
+set file_name=%~n1
+set file_name=%file_name%.zip
+call set "file_path=%%testPath:%file_name%=%%"
+echo %file_path%
+pause
+
