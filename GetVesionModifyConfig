@@ -1,0 +1,115 @@
+import java.io.BufferedReader;
+import java.io.CharArrayWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.management.relation.RelationServiceNotRegisteredException;
+
+public class GetVesionModifyConfig {
+
+	public static void main(String[] args) {
+		if(args.length!=2){
+			System.out.println("must havw two args,inputPath and outputfilePath");
+			System.exit(1);
+		}
+		if("".equals(args[0])||"".equals(args[1])){
+			System.out.println("must havw two args,inputPath and outputfilePath and not empty");
+			System.exit(1);
+		}
+		//String inputPath="D://工作任务//mockManasOneclickInstall//ManasOneClickInstall//新建文件夹//tenant";
+		String inputPath=args[0];
+		//String outputfilePath="D://工作任务//mockManasOneclickInstall//ManasOneClickInstall//tenant//services_manas.xml";
+		String outputfilePath=args[1];
+		String sutidotype="studio-";
+		String runtimetype="predict-";
+		String trainingtype="training-";
+		String studioversion=getVersion(inputPath, sutidotype);
+		String runtimeversion=getVersion(inputPath, runtimetype);
+		String trainingversion=getVersion(inputPath,  trainingtype);
+		if("".equals(studioversion)||"".equals(runtimeversion)||"".equals(trainingversion)){
+			System.out.println("get valid version exception and exit");
+			System.exit(1);
+		}
+		try {
+			modifyConfig(outputfilePath, "studio-(\\d+).(\\d+).([\\w|.]+)", studioversion);
+			modifyConfig(outputfilePath, "predict-(\\d+).(\\d+).([\\w|.]+)", runtimeversion);
+			modifyConfig(outputfilePath, "training-(\\d+).(\\d+).([\\w|.]+)", trainingversion);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("file not found");
+			System.exit(1);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.out.println("io failed");
+			System.exit(1);
+		}
+
+	}
+	
+	public static String getVersion(String inputPath,String type){
+		List<String> list=new ArrayList<String>();
+		File file=new File(inputPath);
+		if(!file.isFile()){
+			File files[] = file.listFiles(new MyFilenameFilter(type));
+			for(File f : files){
+				list.add(f.getName());
+			}
+			System.out.println("suitable files:"+list);
+			if(list.size() == 1){
+				return list.get(0);
+			}
+			else{
+				return "";
+			}
+		}
+		else{
+				System.out.println("inputpath must is path not file");
+				System.exit(1);
+				return "";
+		}
+	}
+	
+	public static void modifyConfig(String outputfilePath,String regex,String modirycontent) throws FileNotFoundException,IOException {
+		File file=new File(outputfilePath);
+		FileReader in=new FileReader(file);
+		BufferedReader brin =new BufferedReader(in);
+		CharArrayWriter tmpStream=new CharArrayWriter();
+		String line=null;
+		while ((line=brin.readLine())!=null) {
+			line = line.replaceAll(regex, modirycontent);
+			if(line.contains("studio-")||line.contains("predict-")||line.contains("training-")){
+				System.out.println("before:"+regex+"------"+modirycontent);
+				System.out.println("after:"+line);
+			}
+			tmpStream.write(line);
+			tmpStream.append(System.getProperty("line.separator"));
+		}
+		brin.close();
+		FileWriter out = new FileWriter(file);
+		tmpStream.writeTo(out);
+		out.close();
+	}
+
+}
+
+class MyFilenameFilter implements FilenameFilter{
+    private String type;
+    public MyFilenameFilter(String type){
+    	this.type = type;
+    }
+	@Override
+	public boolean accept(File dir, String name) {
+		File file =new File(dir,name);
+		return name.startsWith(type) && !file.isFile();
+	}
+	
+	
+}
