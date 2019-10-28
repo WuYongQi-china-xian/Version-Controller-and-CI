@@ -1,0 +1,7 @@
+#查询python默认安装位置
+import sys
+module=sys.path
+for i in module:
+    print(i)
+#安装第三包到指定位置
+pip install numpy==1.15.4 --target=/usr/lib64/python2.7/site-packages/
