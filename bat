@@ -67,3 +67,13 @@ call set "file_path=%%testPath:%file_name%=%%"
 echo %file_path%
 pause
 
+:: 查看上一个批处理的结果是0还是非0
+@echo on
+:: setlocal EnableDelayedExpansion
+setlocal enabledelayedexpansion
+:: dir D:\工作任务\mockManasOneclickInstall\ManasOneClickInstall
+dir D:\工作任务\mockManasOneclickInstall\ManasOneClickInstall\tenant1
+set result=%ERRORLEVEL%
+:: if %result% equ 0 ( echo 1>>createOk ) else ( echo 2>>createfail )
+if %result% equ 0 ( echo "createOk:%result%" ) else ( echo "createfail:%result%" )
+pause
