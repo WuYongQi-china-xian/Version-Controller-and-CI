@@ -77,3 +77,9 @@ set result=%ERRORLEVEL%
 :: if %result% equ 0 ( echo 1>>createOk ) else ( echo 2>>createfail )
 if %result% equ 0 ( echo "createOk:%result%" ) else ( echo "createfail:%result%" )
 pause
+
+
+:: i是数字，从1开始,%%常用于for循环中，如果不在for循环中一个%即可
+%%~ni 代表文件名
+%%~xi代表文件扩展名
+%%~nxi 代表文件名和扩展名
