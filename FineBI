@@ -2,3 +2,56 @@
 官网免费学习视频：http://bbs.fanruan.com/edu
 实时刷新数据：https://help.finebi.com/doc-view-363.html
 iconfont 制作图标
+官网：http://id.fanruan.com/index.php
+官网免费学习视频：http://bbs.fanruan.com/edu
+实时刷新数据：https://help.finebi.com/doc-view-363.html
+iconfont 制作图标
+//跑马灯效果
+setTimeout(function() {
+$("div[widgetname=REPORT0]").find("#frozen-center").css('overflow-x', 'hidden'); 
+$("div[widgetname=REPORT0]").find("#frozen-center").css('overflow-y', 'hidden');
+$("div[widgetname=REPORT0]").find("#frozen-north").css('overflow-x', 'hidden');
+$("div[widgetname=REPORT0]").find("#frozen-north").css('overflow-y', 'hidden');
+$("div[widgetname=REPORT0]").find(".reportContent").css('overflow-y', 'hidden');
+$("div[widgetname=REPORT0]").find(".reportContent").css('overflow-x', 'hidden');
+}, 100);
+window.flag = true;
+setTimeout(function() {
+$("#frozen-center").mouseover(function() {
+window.flag = false;
+})
+//鼠标悬停，滚动停止 
+$("#frozen-center").mouseleave(function() {
+window.flag = true;
+})
+//鼠标离开，继续滚动 
+var old = -1;
+var interval = setInterval(function() {
+if (window.flag) {
+currentpos = $("div[widgetname=REPORT0]").find("#frozen-center")[0].scrollTop;
+if (currentpos == old) {
+$("div[widgetname=REPORT0]").find("#frozen-center")[0].scrollTop = 0;
+} else {
+old = currentpos;
+$("div[widgetname=REPORT0]").find("#frozen-center")[0].scrollTop = currentpos + 1.5;
+}
+}
+}, 25);
+//以25ms的速度每次滚动3.5PX 
+}, 1000)
+//去除滚动条效果
+setTimeout(function() {
+    //获取报表块宽度
+    var wid = ($("div[widgetname='REPORT0']").width() - 17) + 'px';
+    //重置报表块宽度
+    $("div[widgetname='REPORT0']").css('width', wid);
+    //获取报表块高度
+    var height = ($("div[widgetname='REPORT0']").height() - 16) + 'px';
+    //重置报表块高度
+    $("div[widgetname='REPORT0']").css('height', height);
+}, 1000);
+//图标点轮询效果
+setTimeout(function(){
+var vanchart =FR.Chart.WebUtils.getChart("chart2").getChartWithIndex(0);
+vanchart.openAutoTooltip();
+},3000) 
