@@ -1,0 +1,25 @@
+# -*- coding: UTF-8 -*-
+import sys
+
+if sys.getdefaultencoding()!='utf-8':
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
+
+import json
+
+import requests
+
+def main_handler():
+
+    data={"msgtype": "text",
+       "text": {
+       "content": "各位同学请注意:\n1、下班时跑起来",
+       "mentioned_list":["@all"],
+       }}
+
+    header={'Content-Type': 'application/json'}
+
+    requests.post('https://*******/*****', json=data, headers=header)
+
+if __name__ == '__main__':
+    main_handler()
