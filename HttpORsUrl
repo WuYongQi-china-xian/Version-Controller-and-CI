@@ -23,8 +23,7 @@ class HttpORsUrl(object):
     def http_post(httpors,host,port,api,header,values):
         url = httpors+'://'+host+':'+port+api
         print "POST url={url}".format(url=url)
-        #ssl._create_default_https_context=ssl.__create_unverified_context
-
+        context=ssl._create_unverified_context()
         print "values={0}".format(values)
         jdata=json.dumps(values)
         print "jdat={0}".format(jdata)
@@ -34,7 +33,7 @@ class HttpORsUrl(object):
             headervalue = i.values()[0]
             print "headerkey={0},headervalue={1}".format(headerkey,headervalue)
         req.add_header(headerkey,headervalue)
-        response = urllib2.urlopen(req)
+        response = urllib2.urlopen(req,context=context)
         resp = response.read()
         print resp
         respjson = json.loads(resp,object_hook=JSONObject)
