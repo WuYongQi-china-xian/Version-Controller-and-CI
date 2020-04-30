@@ -1,0 +1,74 @@
+# -*- coding: UTF-8 -*-
+import urllib2
+import json
+import ssl
+import  sys
+
+if sys.getdefaultencoding()!='utf-8':
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
+
+class JSONObject:
+    def __init__(self,d):
+        self.__dict__=d
+
+class HttpORsUrl(object):
+    # httpors为使用协议例如https或者http
+    # host为主机ip或域名
+    # port为端口
+    # api为接口路由
+    # header为请求头为数组套json格式[{'Content-Type': 'application/json'}]
+    # values为请求体为json格式的字符串
+    @staticmethod
+    def http_post(httpors,host,port,api,header,values):
+        url = httpors+'://'+host+':'+port+api
+        print "POST url={url}".format(url=url)
+        #ssl._create_default_https_context=ssl.__create_unverified_context
+
+        print "values={0}".format(values)
+        jdata=json.dumps(values)
+        print "jdat={0}".format(jdata)
+        req = urllib2.Request(url,jdata)
+        for i in header:
+            headerkey = i.keys()[0]
+            headervalue = i.values()[0]
+            print "headerkey={0},headervalue={1}".format(headerkey,headervalue)
+        req.add_header(headerkey,headervalue)
+        response = urllib2.urlopen(req)
+        resp = response.read()
+        print resp
+        respjson = json.loads(resp,object_hook=JSONObject)
+        return respjson
+    @staticmethod
+    def http_get(httpors,host,port,api,header):
+        url = httpors+'://'+host+':'+port+api
+        print "GET url={url}".format(url=url)
+        ssl._create_default_https_context = ssl.__create_unverified_context
+        req = urllib2.Request(url)
+        for i in header:
+            headerkey = i.keys()[0]
+            headervalue = i.values()[0]
+            print "headerkey={0},headervalue={1}".format(headerkey, headervalue)
+        req.add_header(headerkey, headervalue)
+        response = urllib2.urlopen(req)
+        resp = response.read()
+        print resp
+        respjson = json.loads(resp, object_hook=JSONObject)
+        return respjson
+    @staticmethod
+    def http_delete(httpors,host,port,api,header):
+        url = httpors + '://' + host + ':' + port + api
+        print "GET url={url}".format(url=url)
+        ssl._create_default_https_context = ssl.__create_unverified_context
+        req = urllib2.Request(url)
+        req.get_method=lambda : 'DELETE'
+        for i in header:
+            headerkey = i.keys()[0]
+            headervalue = i.values()[0]
+            print "headerkey={0},headervalue={1}".format(headerkey, headervalue)
+        req.add_header(headerkey, headervalue)
+        response = urllib2.urlopen(req)
+        resp = response.read()
+        print resp
+        respjson = json.loads(resp, object_hook=JSONObject)
+        return respjson
