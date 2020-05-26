@@ -6,48 +6,42 @@ src_warehouse=$2
 code_workspace=tmp_code
 tar_branch=$3
 tar_warehouse=$4
+is_force=${5:-"False"}
 init_dir=$(pwd)
-user_commit=${5:-""}
 
 function downloadsrccode(){
     $git clone -b ${src_branch} ${src_warehouse};ret=$?
     if [[ $ret -ne 0 ]];then
         echo "download ${src_warehouse} ${src_branch} code was failed"
+		exit $ret
     fi
 }
 
 function downloadetarcode(){
-    $git clone -b ${tar_branch} ${tar_warehouse}
+    $git clone -b ${tar_branch} ${tar_warehouse};ret=$?
     if [[ $ret -ne 0 ]];then
         echo "download ${tar_warehouse} ${tar_branch} code was failed"
+		exit $ret
     fi
 }
 
 function pushsrctotargetcode(){
-    $git status
-    $git add -A *
-    $git commit -a -m "from qci mr ${user_commit}"
-    $git push origin ${tar_branch} 
+    $git remote add ori ${tar_warehouse}
+	$git pull origin ${src_branch} 
+    $git push ori ${tar_branch};ret=$?
     if [[ $ret -ne 0 ]];then
-        echo "qci push ${src_warehouse} ${src_branch} to ${tar_warehouse} ${tar_branch} code was failed"
+	    if [[ ${is_force} == "True" ]];then
+		    echo "Force push src code  to ${tar_warehouse} ${tar_branch}"
+		    $git push -f ori ${tar_branch};ret=$?
+			if [[ $ret -ne 0 ]];then
+			    echo "qci force push ${src_warehouse} ${src_branch} to ${tar_warehouse} ${tar_branch} code was failed"
+		        exit $ret
+			fi
+		else
+		    echo "qci push ${src_warehouse} ${src_branch} to ${tar_warehouse} ${tar_branch} code was failed"
+		    exit $ret
+		fi
     fi
-}
-
-function setgit(){
-    echo ${tar_warehouse} > ~/.git-credentials
-    local issetstore=$(cat ~/.gitconfig | grep "[credential]" -A 40 | grep "helper = store")
-    if [[ -z ${issetstore} ]];then
-        $git config --global credential.helper store
-        echo "set git credential"
-    else
-        echo "no need set git credential"
-    fi
-}
-
-function cleangit(){
-    $git config --global --remove-section credential
-    rm -f ~/.git-credentials
-    echo "clean git credential"
 }
 
 main(){
@@ -55,32 +49,22 @@ main(){
         rm -rf ${code_workspace}
     fi
     mkdir -p ${code_workspace}/src
-    mkdir -p ${code_workspace}/tar
-    cd ${code_workspace}/tar
-    downloadetarcode
-    tar_doc=$(ls) 
+    #mkdir -p ${code_workspace}/tar
+    #cd ${code_workspace}/tar
+    #downloadetarcode
+    #tar_doc=$(ls) 
     cd ${init_dir}/${code_workspace}/src
     downloadsrccode
     src_doc=$(ls)
-    if [[ -z ${user_commit} ]];then	
-        cd ${src_doc}
-        last_commit=$(git log -1 | awk 'END{print $0}')
-        last_commit_date=$(git log -1 | awk 'NR==3{print $0}')
-        user_commit="${last_commit} ${last_commit_date}"
-		cd ..
-	fi
-    echo ${user_commit}
-    rm -rf ${init_dir}/${code_workspace}/tar/${tar_doc}/*
-    cp -rf ${init_dir}/${code_workspace}/src/${src_doc}/* ${init_dir}/${code_workspace}/tar/${tar_doc}/
-    setgit
-    cd ${init_dir}/${code_workspace}/tar/${tar_doc}
-    pushsrctotargetcode
-    cleangit
+    cd ${init_dir}/${code_workspace}/src/${src_doc}
+    pushsrctotargetcode;ret=$?
     cd ${init_dir}
+	exit $ret
 }
 main
 
-使用方法sh asynccode.sh master http://用户名:密码@git.xxx.com/xxx/xxx.git master https://用户名:私有token@github.com/xxx/xxx.git
+
+使用方法sh asynccode.sh master http://用户名:密码@git.xxx.com/xxx/xxx.git master https://用户名:私有token@github.com/xxx/xxx.git False
 
 # -*- coding: UTF-8 -*-
 import sys
@@ -124,10 +108,6 @@ class PULL_PUSCH_CODE(object):
             sys.exit(2)
         elif tar_warehouse.count("//") != 1:
             print('目标仓库git url 里有多余得//')
-        user_commit=args.user_commit
-        if user_commit is None:
-            print('如果版本提交评论是空对象，转为空字符串')
-            user_commit=''
         src_user=args.src_user
         if src_user is None:
             print('如果源用户名是空对象，转为空字符串')
@@ -144,20 +124,23 @@ class PULL_PUSCH_CODE(object):
         if tar_pass is None:
             print('如果目标用户密码是空对象，转为空字符串')
             tar_user=''
+        is_force=args.is_force
         try:
             src_warehouse_split=src_warehouse.split('//')
             src_final_warehouse=src_warehouse_split[0]+'//'+src_user+':'+src_pass+'@'+src_warehouse_split[1]
             tar_warehouse_split=tar_warehouse.split('//')
             tar_final_warehouse=tar_warehouse_split[0]+'//'+tar_user+':'+tar_pass+'@'+tar_warehouse_split[1]
-            cmd='sh '+sys.path[0]+'/asynccode.sh '+src_branch+' '+src_final_warehouse+' '+tar_branch+' '+tar_final_warehouse+' '+user_commit
-            print("cmd:{0}".format(cmd))
-            #out_bytes = subprocess.check_output([cmd,src_branch,src_final_warehouse,tar_branch,tar_final_warehouse,user_commit])
-            out_bytes = subprocess.check_output(cmd,shell=True)
+            cmd='sh '+sys.path[0]+'/asynccode.sh '+src_branch+' '+src_final_warehouse+' '+tar_branch+' '+tar_final_warehouse+' '+is_force
+            ret = subprocess.run(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,encoding="utf-8",timeout=1800)
+            if ret.returncode == 0:
+                print("success:",ret)
+                sys.exit(0)
+            else:
+                print("error:",ret)
+                sys.exit(4)
         except subprocess.CalledProcessError as e:
             out_bytes = e.output       # Output generated before error
             code = e.returncode   # Return code    
-        
-        
 
 if __name__ == '__main__':
     # 获取参数
@@ -178,8 +161,6 @@ if __name__ == '__main__':
                              type=str, help='target branh name', required=True)
     sub_parser0.add_argument('--tar_warehouse', '-tar_warehouse',
                              type=str, help='target git http or https url', required=True)   
-    sub_parser0.add_argument('--user_commit', '-user_commit',
-                             type=str, help='if it was blank,user_commit was src git last log,else you write commit was used', required=True)
     sub_parser0.add_argument('--src_user', '-src_user',
                              type=str, help='src git user name', required=True)
     sub_parser0.add_argument('--src_pass', '-src_pass',
@@ -187,10 +168,12 @@ if __name__ == '__main__':
     sub_parser0.add_argument('--tar_user', '-tar_user',
                              type=str, help='target git user name', required=True)
     sub_parser0.add_argument('--tar_pass', '-tar_pass',
-                             type=str, help='target git password', required=True)                             
+                             type=str, help='target git password', required=True)
+    sub_parser0.add_argument('--is_force', '-is_force',
+                             type=str, help='use force push is True or False', required=True)                              
     sub_parser0.set_defaults(func=pull_push_code.start_pull_and_push_code)
     args = main_parser.parse_args()
     args.func(args)
 
 使用方法
-python3 src/run.py start_pull_and_push_code -src_branch master -src_warehouse http://git.xxx.com/xxx/xxx.git -tar_branch master -tar_warehouse https://github.com/xxx/xxx.git -user_commit '' -src_user xxx -src_pass xxx -tar_user xxx -tar_pass xxx
+python3 src/run.py start_pull_and_push_code -src_branch master -src_warehouse http://git.xxx.com/xxx/xxx.git -tar_branch master -tar_warehouse https://github.com/xxx/xxx.git -user_commit '' -src_user xxx -src_pass xxx -tar_user xxx -tar_pass xxx -is_force False
