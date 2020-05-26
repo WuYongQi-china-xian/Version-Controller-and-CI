@@ -176,4 +176,4 @@ if __name__ == '__main__':
     args.func(args)
 
 使用方法
-python3 src/run.py start_pull_and_push_code -src_branch master -src_warehouse http://git.xxx.com/xxx/xxx.git -tar_branch master -tar_warehouse https://github.com/xxx/xxx.git -user_commit '' -src_user xxx -src_pass xxx -tar_user xxx -tar_pass xxx -is_force False
+python3 src/run.py start_pull_and_push_code -src_branch master -src_warehouse http://git.xxx.com/xxx/xxx.git -tar_branch master -tar_warehouse https://github.com/xxx/xxx.git -src_user xxx -src_pass xxx -tar_user xxx -tar_pass xxx -is_force False
