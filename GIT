@@ -10,3 +10,14 @@ git branch //查询本地分支
 git push origin --delete 远端分支名称 // 删除远端分支
 git branch -D  本地分支名称 //  删除本地分支
 git pull origin master //拉取master分支的代码
+git tag -l --sort=-taggerdate #按打tag的时间降序排列
+git tag -l --sort=taggerdate #按打tag的时间升序排列
+git tag -l --sort=-taggerdate | awk 'NR==1{print}' #按打tag的时间降序排列 输出第一行的值
+git show -s --format=%s v1.0.0^{commit} 显示标签v1.0.0指向的提交的主题
+git show -s --pretty=format:"%ai,%an: %s" trtc_access_20200709
+git show -s --pretty=format:"%ai,%an: %s" $(git tag -l --sort=-taggerdate | awk 'NR==1{print}')
+git whatchanged -1 | grep "^:" | awk '{print $6}' #获取最近一次MR的改动文件的列表
+git whatchanged --since="2020-07-13" | grep "^:" |awk '{print $6}' #获取2020-72-13之后（不含13）的MR改动的文件列表，这里的日期是改动日期不是合入日期
+git rev-list --since='2020-01-01' --until='2020-07-16' master | tail -1 这个等同于watchchaged用的日期时间点
+git log --before="2020-07-06" | grep -B 1 "^Merge: " | head -1 | awk '{print $2}' (含7月6号)
+git log --since="2020-07-06" | grep -B 1 "^Merge: " | head -1 | awk '{print $2}'  （不含7月6号，含7月7号之后）
