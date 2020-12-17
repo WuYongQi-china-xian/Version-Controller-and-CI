@@ -1,0 +1,35 @@
+#! python3
+# coding:utf-8
+import argparse
+
+def accord_L5_qurey_ips_to_var(args):
+    args.modId
+    args.cmdId
+
+def main():
+    main_parser = argparse.ArgumentParser(description=u'描述信息')
+
+    subparsers = main_parser.add_subparsers(
+        dest='parser', title='list of command', metavar='COMMAND')
+    subparsers.required = True
+
+    sub_parser0 = subparsers.add_parser(
+        "accord_L5_qurey_ips_to_var",
+        help="描述信息")
+    sub_parser0.add_argument("--modId", "-modId", type=str, default="",
+                             help="参数描述信息", required=True)
+    sub_parser0.add_argument("--cmdId", "-cmdId", type=str, default="",
+                             help="参数描述信息", required=True)
+    sub_parser0.add_argument("--user", "-user", type=str, default="",
+                             help="参数描述信息", required=True)
+    sub_parser0.add_argument("--var_list", "-var_list", type=str, default="",
+                             help="参数描述信息", required=True)
+    sub_parser0.add_argument("--var_str", "-var_str", type=str, default="",
+                             help="参数描述信息", required=True)
+    sub_parser0.set_defaults(func=accord_L5_qurey_ips_to_var)
+
+    args = main_parser.parse_args()
+    args.func(args)
+
+if __name__ == "__main__":
+    main()
