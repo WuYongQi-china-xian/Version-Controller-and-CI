@@ -1,0 +1,80 @@
+#! python3
+# coding:utf-8
+
+import os
+import subprocess
+import requests
+import json
+
+class JSONObject:
+    def __init__(self,d):
+        self.__dict__=d
+
+class Common:
+
+    @staticmethod
+    def exec_cmd(cmd):
+        print(f"命令{cmd}")
+        # 子进程的标准输出设置为管道对象
+        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, universal_newlines=True, encoding="utf-8")
+        p.wait()  # 阻塞当前线程直到子进程 p 执行结束
+        result_lines = p.stdout.readlines()  # 从子进程 p 的标准输出中读取所有行，并储存在一个list对象中
+
+        for line in result_lines:
+            print(line.strip())
+
+        print(f"{cmd}命令返回{p.returncode}")
+        return p.returncode
+
+    @staticmethod
+    def set_env(envKey, envValue):
+        # 设置QCI的环境变量
+        try:
+            env_path = os.getenv('QCI_ENV_FILE', None)
+            if env_path:
+                with open(env_path, 'a+') as f:  # 注意是追加
+                    f.write("%s=%s\n" % (envKey, envValue))
+
+        except Exception as e:
+            print("Set qci env error: {}".format(e))
+            raise
+
+    @staticmethod
+    def send_data(method, headers, body, api, httpors, host, port,return_type='obj'):
+        """
+        封装requests包，发送请求
+        :param method: str POST|GET|PUT|DELETE 请求类型
+        :param headers: dict 请求头
+        :param body: dict 请求体
+        :param api: str 接口路径
+        :param httpors: str http|https 请求协议
+        :param host: str 主机名或域名
+        :param port: str 端口
+        :param return_type: str obj|dict|str 响应体返回类型
+        :return: obj|dict|str 响应体
+        """
+        url = httpors + '://' + host + ':' + port + api
+        if port == '':
+            url = httpors + '://' + host + api
+        print(f"INFO: {method} url={url}")
+        print(f"INFO: headers={headers}")
+        print(f"INFO: body={body}")
+        if method == 'POST':
+            resp=requests.post(url=url, headers=headers, data=json.dumps(body))
+        elif method == 'GET':
+            resp=requests.get(url=url, headers=headers, data=json.dumps(body))
+        elif method == 'PUT':
+            resp=requests.put(url=url, headers=headers, data=json.dumps(body))
+        elif method == 'DELETE':
+            resp=requests.delete(url=url, headers=headers, data=json.dumps(body))
+        else:
+            raise ValueError(f"{method}方法暂不支持，目前只支持POST/GET/PUT/DELETE")
+
+        if return_type == 'obj':
+            respjson = json.loads(json.dumps(resp.json()),object_hook=JSONObject)
+        elif return_type == 'str':
+            respjson = json.dumps(resp.json())
+        else:
+            respjson = resp.json()
+        print(f"INFO: resp={respjson}")
+        return respjson
