@@ -40,7 +40,7 @@ class Common:
             raise
 
     @staticmethod
-    def send_data(method, headers, body, api, httpors, host, port,return_type='obj'):
+    def send_data(method, headers, api, httpors, host, port,body='',return_type='obj'):
         """
         封装requests包，发送请求
         :param method: str POST|GET|PUT|DELETE 请求类型
@@ -62,7 +62,7 @@ class Common:
         if method == 'POST':
             resp=requests.post(url=url, headers=headers, data=json.dumps(body))
         elif method == 'GET':
-            resp=requests.get(url=url, headers=headers, data=json.dumps(body))
+            resp=requests.get(url=url, headers=headers)
         elif method == 'PUT':
             resp=requests.put(url=url, headers=headers, data=json.dumps(body))
         elif method == 'DELETE':
@@ -70,11 +70,14 @@ class Common:
         else:
             raise ValueError(f"{method}方法暂不支持，目前只支持POST/GET/PUT/DELETE")
 
-        if return_type == 'obj':
-            respjson = json.loads(json.dumps(resp.json()),object_hook=JSONObject)
-        elif return_type == 'str':
-            respjson = json.dumps(resp.json())
+        if resp.status_code == 200:
+            if return_type == 'obj':
+                respjson = json.loads(json.dumps(resp.json()),object_hook=JSONObject)
+            elif return_type == 'str':
+                respjson = json.dumps(resp.json())
+            else:
+                respjson = resp.json()
+            print(f"INFO: resp={respjson}")
+            return respjson
         else:
-            respjson = resp.json()
-        print(f"INFO: resp={respjson}")
-        return respjson
+            raise ValueError(f"请求发送失败：{resp}")
