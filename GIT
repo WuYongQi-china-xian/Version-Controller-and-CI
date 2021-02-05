@@ -25,3 +25,5 @@ git commit --amend '本地追加评论'
 git reset 'commit' # 本地回退commit的提交
 git reset 'commit' --hard # 本地回退commit的提交，并删除改动文件
 git revert # 用于回滚某次提交的内容，并生成新的提交，不会抹掉历史。适合已push到远端时的回滚
+git reflog #恢复本地操作记录
+git checkout -- 文件 #回退文件中的内容
