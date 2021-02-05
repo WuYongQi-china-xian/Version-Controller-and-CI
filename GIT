@@ -21,3 +21,7 @@ git whatchanged --since="2020-07-13" | grep "^:" |awk '{print $6}' #获取2020-7
 git rev-list --since='2020-01-01' --until='2020-07-16' master | tail -1 这个等同于watchchaged用的日期时间点
 git log --before="2020-07-06" | grep -B 1 "^Merge: " | head -1 | awk '{print $2}' (含7月6号)
 git log --since="2020-07-06" | grep -B 1 "^Merge: " | head -1 | awk '{print $2}'  （不含7月6号，含7月7号之后）
+git commit --amend '本地追加评论'
+git reset 'commit' # 本地回退commit的提交
+git reset 'commit' --hard # 本地回退commit的提交，并删除改动文件
+git revert # 用于回滚某次提交的内容，并生成新的提交，不会抹掉历史。适合已push到远端时的回滚
