@@ -29,3 +29,103 @@ git reflog #恢复本地操作记录
 git checkout -- 文件 #回退文件中的内容
 git checkout <目标commit> -- <文件> # 恢复目标commit中的特定文件
 git branch <分支名> <目标commit> # 基于目标commit重建分支
+
+# http协议clone 代码到当前文件夹下自动生成得工蜂仓库名文件夹即WorkerBeeToGithub文件夹
+git clone -b 工蜂分支 --recursive --depth=1 https://git.woa.com/wolfwwu/WorkerBeeToGithub.git
+# http协议clone 代码到指定文件夹
+git clone -b 工蜂分支 --recursive --depth=1 https://git.woa.com/wolfwwu/WorkerBeeToGithub.git 指定文件夹
+# ssh协议clone 代码到当前文件夹下自动生成得工蜂仓库名文件夹即WorkerBeeToGithub文件夹
+git clone -b 工蜂分支 --recursive --depth=1 git@git.woa.com:wolfwwu/WorkerBeeToGithub.git
+# ssh协议clone 代码到指定文件夹
+git clone -b 工蜂分支 --recursive --depth=1 git@git.woa.com:wolfwwu/WorkerBeeToGithub.git 指定文件夹
+# 注意：https协议需要输入用户名和密码，ssh协议需要添加SSH密钥
+# --depth=1只克隆指定分支
+# --recursive 克隆子库
+
+# 将远程主机名下的远程分支拉取过来与本地的分支合并
+git pull <远程主机名> <远程分支名>:<本地分支名>
+# 将远程主机 origin 的 master 分支拉取过来，与本地的 brantest 分支合并。
+git pull origin master:brantest
+# 如果远程分支是与当前分支合并，则冒号后面的部分可以省略。
+git pull origin master
+
+# 切换分支
+git chekout 分支名或者commitid
+# 创建分支，从游离分支到稳定分支
+git checkout -b 分支名
+
+# git log的本质是展示提交信息，commit id 和commit的注释评论这里都能查到。按:q可以退出查看状态
+git log
+
+合并多个commit为一个完整commit
+# 弹出交互式的界面让用户编辑完成合并操作 ,[startpoint] [endpoint]则指定了一个编辑区间，如果不指定[endpoint]，则该区间的终点默认是当前分支HEAD所指向的commit(注：该区间指定的是一个前开后闭的区间)。
+git rebase -i  [startpoint]  [endpoint]
+# 交互界面选项含义
+# pick：保留该commit（缩写:p）
+# reword：保留该commit，但我需要修改该commit的注释（缩写:r）
+# edit：保留该commit, 但我要停下来修改该提交(不仅仅修改注释)（缩写:e）
+# squash：将该commit和前一个commit合并（缩写:s）
+# fixup：将该commit和前一个commit合并，但我不要保留该提交的注释信息（缩写:f）
+# exec：执行shell命令（缩写:x）
+# drop：我要丢弃该commit（缩写:d）
+
+将某一段commit粘贴到另一个分支上
+# [startpoint] [endpoint]仍然和上一个命令一样指定了一个commit编辑区间(前开后闭)，--onto的意思是要将该指定的提交复制到哪个分支上。
+git rebase   [startpoint]   [endpoint]  --onto  [branchName]
+# 将master上新的提交粘贴到当前本地开发分支
+git rebase master 
+
+git status
+
+# 显示修改后缓存区和工作区中文件修改点差异，红字的路径可以通过git status查到
+git diff 红字的路径
+
+# 将缓存区中的改动加入工作区
+git add 改动文件的相对路径
+
+# 将工作区中的改动，写上评论加入提交点
+git commit -m '注释评论'
+# 注释评论错误了立即修改评论,按i进入变基模式，编辑好新的注释评论后，按:wq回车
+git commit --amend
+# 想撤回commit，怎么办？HEAD^的意思是上一个版本，下面的意思是强制重新设置回上一个版本，建议commit后能修改就修改，尽量不要操作下面的重置命令
+git reset --soft HEAD^
+
+# 将本地的分支版本上传到远程并合并
+git push <远程主机名> <本地分支名>:<远程分支名>
+# 如果本地分支名与远程分支名相同，则可以省略冒号：
+git push <远程主机名> <本地分支名>
+# 本地的 dev分支推送到 origin 主机的 dev分支
+git push origin dev
+# git push命令采用--recurse-submodules可以设置为“check”或“on-demand”的参数。push如果没有推送任何已提交的子模块更改，“check”选项将简单地失败,"on-demand"选项会父库和子库一起进行提交
+
+# 添加子模块
+ git submodule add url 文件夹
+# 查看子模块，子模块前面有一个-，说明子模块文件还未检入（空文件夹）
+git submodule
+# 初始化子模块
+git submodule init
+# 更新项目内子模块到最新版本
+git submodule update
+# 更新子模块为远程项目的最新版本
+git submodule update --remote
+# 删除子模块
+# 删除子模块文件夹
+git rm --cached 文件夹
+rm -rf 文件夹
+# 删除.gitmodules文件中相关子模块信息
+# 删除.git/config中的相关子模块信息
+# 删除.git文件夹中的相关子模块文件
+rm -rf .git/modules/文件夹
+# submodule 指定对应分支
+# 创建子模块时指定一个分支
+git submodule add -b 分支名 [URL to Git repo]
+# 在.gitmodules 文件中设置分支
+git config -f .gitmodules submodule.子模块名.branch 分支名
+# 主目录中找到对应的子模块，切换到对应的分支
+cd project/submoduleA
+git checkout master
+# 将子模块置于我们要切换到的分支的正确状态
+git checkout --recurse-submodules master
+# 指定commit版本的子模块
+# 进入子模块目录，将子模块回滚到指定commit版本
+git reset --hard [commit-number]
